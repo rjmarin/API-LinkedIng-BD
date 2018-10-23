@@ -1,0 +1,10 @@
+1)SELECT id_perfil, COUNT(*) FROM validar GROUP BY id_perfil ORDER BY COUNT(*) DESC LIMIT 1;
+
+11)SELECT AVG(date_part)  as promedio_por_mes FROM  (SELECT EXTRACT(MONTH FROM fecha_de_postulacion)  FROM postulacion WHERE aceptado = false GROUP BY EXTRACT(MONTH FROM fecha_de_postulacion)) as foo;
+
+
+12)SELECT AVG(t1) FROM (SELECT CASE WHEN fecha_fin IS NULL THEN CAST((2018 - EXTRACT(YEAR FROM fecha_de_inicio)) as int)  ELSE CAST((EXTRACT(YEAR FROM fecha_fin)- EXTRACT(YEAR FROM fecha_de_inicio)) as int) END as t1 FROM trabaja) as foo ;
+
+
+
+

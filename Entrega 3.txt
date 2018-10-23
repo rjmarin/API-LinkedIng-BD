@@ -1,0 +1,48 @@
+1)SELECT id_perfil, COUNT(*) FROM validar GROUP BY id_perfil ORDER BY COUNT(*) DESC LIMIT 1;
+
+
+2)SELECT e.nombre, COUNT(*) FROM empresa e LEFT JOIN postulacion p ON p.id_empresa=e.id AND EXTRACT(MONTH FROM p.fecha_de_postulacion)=10 AND EXTRACT(YEAR FROM p.fecha_de_postulacion)=2014 GROUP BY e.nombre ORDER BY COUNT(*) DESC LIMIT 3 ;;
+####AÑO 2014 solo postulaciones Supuestos, ultimo mes 10 octubre####
+
+4)SELECT EXTRACT ( MONTH FROM cd.fecha_disponible), COUNT(*) FROM cargos_disponibles cd WHERE EXTRACT(YEAR FROM cd.fecha_disponible)=2013 GROUP BY EXTRACT ( MONTH FROM cd.fecha_disponible) ORDER BY EXTRACT ( MONTH FROM cd.fecha_disponible);
+#### SOLO TRABAJOS en 2013#####
+
+6)SELECT EXTRACT ( MONTH FROM p.fecha_de_postulacion), COUNT(*) FROM postulacion p WHERE EXTRACT(YEAR FROM p.fecha_de_postulacion)=2014 GROUP BY EXTRACT ( MONTH FROM p.fecha_de_postulacion) ORDER BY EXTRACT ( MONTH FROM p.fecha_de_postulacion);
+#### SOLO trrbajos 2014####
+
+8)SELECT COUNT(*) FROM estudio e, trabaja t WHERE e.id_perfil=t.id_trabajador AND ((EXTRACT(YEAR FROM e.fecha_fin)>2018 AND EXTRACT(YEAR FROM e.fecha_inicio)<2018) OR EXTRACT(YEAR FROM e.fecha_inicio)=2018 ) AND t.fecha_fin is NULL AND (EXTRACT(YEAR FROM t.fecha_de_inicio)<2018 OR EXTRACT(MONTH FROM t.fecha_de_inicio)<7 );
+
+9)SELECT p.id, COUNT(*) FROM perfil p, solicitud s WHERE p.email=s.email_usuario AND s.aceptada='Aceptada' AND s.email_usuario_amistad IN (SELECT p.email FROM perfil p, trabaja t WHERE p.id=t.id_trabajador AND t.fecha_fin is NULL) GROUP BY p.id ORDER BY COUNT(*) DESC LIMIT 2;
+#### #
+
+10)SELECT p.id, COUNT(*) FROM perfil p, solicitud s WHERE p.email=s.email_usuario AND s.aceptada='Aceptada' AND s.email_usuario_amistad IN (SELECT p.email FROM perfil p, estudio e WHERE p.id=e.id_perfil AND e.grado_academico= 'Alto' AND EXTRACT(YEAR FROM e.fecha_fin)>2018 AND EXTRACT(YEAR FROM e.fecha_inicio)<2018) GROUP BY p.id ORDER BY COUNT(*) DESC;
+#### esto es lo que piden ###
+
+SELECT p.email FROM perfil p, estudio e WHERE p.id=e.id_perfil AND e.grado_academico= 'Alto' AND EXTRACT(YEAR FROM e.fecha_fin)>2018 AND EXTRACT(YEAR FROM e.fecha_inicio)<2018;
+### quien estudia postgrado####
+
+SELECT s.email_usuario, s.aceptada FROM solicitud s WHERE  s.email_usuario_amistad='Carmelocortes@gmail.com';
+###verificar si existe alguno####
+
+11)SELECT AVG(date_part)  as promedio_por_mes FROM  (SELECT EXTRACT(MONTH FROM fecha_de_postulacion)  FROM postulacion WHERE aceptado = false GROUP BY EXTRACT(MONTH FROM fecha_de_postulacion)) as foo;
+
+
+12)SELECT AVG(t1) FROM (SELECT CASE WHEN fecha_fin IS NULL THEN CAST((2018 - EXTRACT(YEAR FROM fecha_de_inicio)) as int)  ELSE CAST((EXTRACT(YEAR FROM fecha_fin)- EXTRACT(YEAR FROM fecha_de_inicio)) as int) END as t1 FROM trabaja) as foo ;
+
+13)SELECT EXTRACT (MONTH FROM p.fecha), COUNT(*) FROM publicacion p LEFT JOIN estudio e ON p.id_usuario=e.id_perfil AND e.grado_academico='Alto' GROUP BY EXTRACT (MONTH FROM p.fecha) ORDER BY EXTRACT (MONTH FROM p.fecha) ;
+### Post-grado =altos , supuesto####
+
+14)SELECT EXTRACT (MONTH FROM c.fecha), COUNT(*) FROM comentario c LEFT JOIN publicacion p ON c.id_publicacion=p.id_publicacion LEFT JOIN empresa e ON e.id=p.id_usuario GROUP BY EXTRACT (MONTH FROM c.fecha) ORDER BY EXTRACT (MONTH FROM c.fecha);
+
+15)SELECT e.nombre, COUNT(*) FROM empresa e LEFT JOIN trabaja t ON t.id_empresa=e.id AND t.fecha_fin is NULL GROUP BY e.nombre ORDER BY COUNT(*) DESC LIMIT 1;
+
+
+16) SELECT h.habilidad, COUNT(*),  AVG(prom) FROM habilidad h,  (SELECT habilidad_perfil as h,   COUNT(*) as prom FROM validar GROUP BY habilidad_perfil) as fo GROUP BY h.habilidad;
+
+17)SELECT p.id, COUNT(*) FROM perfil p, solicitud s WHERE p.email=s.email_usuario AND s.aceptada='Aceptada' AND s.email_usuario_amistad IN (SELECT p.email FROM perfil p, trabaja t WHERE p.id=t.id_trabajador AND t.fecha_fin is NULL) GROUP BY p.id ORDER BY COUNT(*) DESC LIMIT 2;
+#### falta empresas diferentes#######
+
+
+18)SELECT t.id_empresa, EXTRACT(MONTH FROM t.fecha_de_inicio), COUNT(*) FROM trabaja t LEFT JOIN empresa e ON t.id_empresa=e.id GROUP BY t.id_empresa, EXTRACT(MONTH FROM t.fecha_de_inicio) ORDER BY t.id_empresa,EXTRACT(MONTH FROM t.fecha_de_inicio);
+18)
+
