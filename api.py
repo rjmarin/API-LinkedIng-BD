@@ -5,6 +5,8 @@ from tabulate import tabulate
 
 conn = psycopg2.connect(host = "201.238.213.114", port= "54321", database="grupo23", user="grupo23", password="f9kNXT")
 
+
+ 
 cur = conn.cursor()
 print("\t BIENVENIDO A LINKEDING ")
 main = True
@@ -30,7 +32,7 @@ while main:
                         print("Sesion iniciada")
                         cur.execute(("SELECT id FROM perfil WHERE {} = email;").format(str("'" + email + "'")))
                         id = cur.fetchone()
-                        print(id)
+                        print(id[0])
                         if id == None:
                             id = 70
                         usarioE=True
@@ -134,12 +136,86 @@ while TRUUEEE:
             print("(7) VOLVER")
             opcionperfil=raw_input("ingrese opcion:")
             if opcionperfil=="1":
-
+                while True:
+                    print("(1) Cambiar nombre")
+                    print("(2) Cambiar apellido")
+                    print("(3) Cambiar sexo")
+                    print("(4) Cambiar pais")
+                    print("(5) Cambiar descripcion")
+                    print("(6) VOLVER")
+                    cambioperfil =raw_input("ingrese una opcion: ")
+                    if cambioperfil == "1":
+                        name = raw_input("ingrese nuevo nombre: ")
+                        cur.execute("UPDATE perfil SET nombre = {} WHERE id = {};".format(str("'" + name +"'" ) , id[0]))
+                        conn.commit()
+                        break
+                    elif cambioperfil == "2":
+                        lastn = raw_input("ingrese nuevo apellido: ")
+                        cur.execute("UPDATE perfil SET apellido = {} WHERE id = {};".format(str("'" + lastn +"'" ) , id[0]))
+                        conn.commit()
+                        break
+                    elif cambioperfil == "3":
+                        if perfil[4] == "Masculino":
+                            sexo = "Femenino"
+                        else:
+                            sexo = "Masculino"
+                        cur.execute("UPDATE perfil SET genero = {} WHERE id = {};".format(str("'" + sexo +"'" ) , id[0]))
+                        conn.commit()
+                        break
+                    elif cambioperfil == "4":
+                        pais = raw_input("ingrese nuevo pais: ")
+                        cur.execute("UPDATE perfil SET pais = {} WHERE id = {};".format(str("'" + pais +"'" ) , id[0]))
+                        conn.commit()
+                        break
+                    elif cambioperfil == "5":
+                        desc = raw_input("ingrese nuevo descripcion: ")
+                        cur.execute("UPDATE perfil SET descripcion = {} WHERE id = {};".format(str("'" + desc +"'" ) , id[0]))
+                        conn.commit()
+                        break
+                    elif cambioperfil == "6":
+                        break
+                    else:
+                        print("opcion incorrecta! Intente nueamente")
                 
                 pass
             elif opcionperfil=="2":
-                pass
+                foto = raw_input("ingrese foto(.png) :")
+                cur.execute("INSERT INTO Foto_perfil(id_perfil, foto)VALUES ({},{});".format(id[0], str("'" +foto + "'" )))
+                
             elif opcionperfil=="3":
+                while True:
+                    cur.execute(" SELECT  habilidad_perfil, COUNT(*) FROM validar WHERE id_perfil = {} GROUP BY habilidad_perfil".format(perfil[0]))
+                    habilidad = cur.fetchall()
+                    count = 1
+                    hab =[]
+                    for hh in habilidad:
+                        hab.append([count, hh[0], hh[1]])
+                        count += 1
+                    print(tabulate(hab, headers=["numero", "habilidades", "validaciones"], tablefmt= "fancygrid"))
+                    print("(1) VER HABILIDAD")
+                    print("(2) AGREGAR HABILIDAD")
+                    print("(3) ELIMINAR HABILIDAD")
+                    print("(4) VOLVER")
+                    opcionhabilidad = raw_input("ingrese una opcion:")
+                    if opcionhabilidad == "1":
+                        numh = int(raw_input("ingrese numero de habilidad: "))
+
+                        cur.execute(" SELECT habilidad_perfil, email_usuario_valida FROM validar WHERE id_perfil = {} and habilidad_perfil = {}".format(perfil[0], str("'" +  hab[0][numh] + "'")))
+                        emails = cur.fetchall()
+                        print(tabulate(emails, headers=[ "habilidad", "usuario que valido"], tablefmt= "fancygrid"))
+                    elif opcionhabilidad == "2":
+                        nuevahab = raw_input("ingrese  nombre de una nueva habilidad: ")
+                        deschab = raw_input("ingrse descripcion de esta: ")
+                        cur.execute("INSERT INTO Habilidad(id_perfil,habilidad,descripcion) VALUES ({},{},{})".format(id[0],nuevahab, deschab ))
+                        conn.commit
+                    elif opcionhabilidad == "3":
+                        ophabilidad = raw_input("ingrese numero de habilidad")
+                    elif opcionhabilidad == "4":
+                        break              
+                    else:
+                        print("Opcion incorrecta!") 
+
+                
                 pass
             elif opcionperfil=="4":
                 pass
@@ -159,7 +235,7 @@ while TRUUEEE:
     elif opcion == "3":
         Boolnotiifcaciones = True
         while Boolnotiifcaciones:
-            cur.execute("SELECT * from notificacion WHERE estado = 'no leido' and  id_perfil =  {} ".format(id))
+            cur.execute("SELECT * from notificacion WHERE estado = 'no leido' and  id_perfil =  {} ".format(id[0]))
             rows = cur.fetchall()
             c = 0
             print("NOTIFICIONES SIN LEER")
@@ -210,12 +286,14 @@ while TRUUEEE:
                             print("--------------------------------------------")
                             cur.execute(("UPDATE notificacion SET  estado = 'leido' where id_notificacion = {}").format(i[0])) 
                             conn.commit()
+                    
+
 
             elif opcionnotificaciones == "2":
-                            cur.execute(("UPDATE notificacion SET estado =  'leido' WHERE id_perfil =  {} ").format(str(id)))
+                            cur.execute(("UPDATE notificacion SET estado =  'leido' WHERE id_perfil =  {} ").format(str(id[0])))
                             conn.commit()
             elif opcionnotificaciones == "3":
-                cur.execute(("SELECT * from notificacion WHERE estado = 'leido' and  id_perfil =  {} ").format(str(id)))
+                cur.execute(("SELECT * from notificacion WHERE estado = 'leido' and  id_perfil =  {} ").format(str(id[0])))
                 rowss = cur.fetchall()
                 cc = 0
                 print("NOTIFICIONES LEIDAS")
