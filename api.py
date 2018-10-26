@@ -5,7 +5,9 @@ from tabulate import tabulate
 
 conn = psycopg2.connect(host = "201.238.213.114", port= "54321", database="grupo23", user="grupo23", password="f9kNXT")
 
-
+def pasastring(stg):
+    st = str("'" + stg + "'") 
+    return st
  
 cur = conn.cursor()
 print("\t BIENVENIDO A LINKEDING ")
@@ -317,6 +319,226 @@ while TRUUEEE:
                  print("Opcion invalida")
 
     elif opcion == "2":
+        Bpublicacion = True
+        while Bpublicacion:
+            print("(1) CREAR PUBLICACION")
+            print("(2) MIS PUBLICACIONES")
+            print("(3) OTRAS PUBLICACIONES")
+            print("(4) VOLVER")
+            opcionpublicacion = raw_input("Ingrese una opcion: ")
+            if opcionpublicacion == "1":
+                priv = raw_input("quiere que la publicacion sea privada? (1)SI (2)NO ")
+                if priv == "1":
+                    privada = "'Privado'"
+                else:
+                    privada = "'Publico'"
+                cont = raw_input("Ingrese contenido de la publicacion(MAX 100 chr): ")
+                estado = "'Activo'"
+                cont = "'" +cont + "'"
+                fechapubli = "'" + str(datetime.date.today()) + "'"
+                cur.execute("SELECT id_publicacion  from publicacion;")
+                idp = cur.fetchall()
+                ids = []
+                for ij in idp:
+                    ids.append(ij[0])
+                id_publicacion = 1
+                while id_publicacion in ids:
+                    id_publicacion +=1 
+                cur.execute("INSERT INTO Publicacion(id_publicacion,id_usuario,privacidad,contenido,fecha,estado) VALUES ({},{},{},{},{},{});".format(id_publicacion,id[0],privada,cont,fechapubli,estado))
+                conn.commit()
+            elif opcionpublicacion == "2":
+                while True:
+                    cur.execute("SELECT id_publicacion, contenido from publicacion WHERE id_usuario = {} and estado = 'Activo'".format(id[0]))
+                    publicaciones = cur.fetchall()
+                    print(tabulate(publicaciones, headers=["id_publicacion", "publicacion"], tablefmt= "fancygrid"))
+                    npubli = int(raw_input("Ingrese id de publicacion: "))
+                    cur.execute("SELECT id_comentario, texto from comentario WHERE  estado = 'Vigente' and id_publicacion = {};".format(npubli))
+                    coment = cur.fetchall()
+                    print(tabulate(coment, headers=["id_comentario", "comentario"], tablefmt= "fancygrid"))
+                    print("(0) COMENTAR COMENTARIO")
+                    print("(1) COMENTAR PUBLICACION")
+                    print("(2) ELIMINAR COMENTARIO")
+                    print("(3) EDITAR PUBLICACION")
+                    print("(4) ELIMINAR PUBLICACION")
+                    print("(5) VOLVER")
+                    opmispubli = raw_input("Ingrese una opcion: ")
+                    if opmispubli =="0":
+                        numcomen = int(raw_input("ingrese id de comentario: "))
+                        for nc in coment:
+                            if numcomen == nc[0]:
+                                break
+                        copucha = raw_input("COMENTE(300 max): ")
+                        copucha = str("'" +copucha + "'")
+                        fehcahd = "'" +str(datetime.date.today()) +"'"
+                        cur.execute("SELECT id_sub_comentario  from sub_comentario;")
+                        idc = cur.fetchall()
+                        ids = []
+                        for ij in idc:
+                            ids.append(ij[0])
+                        id_sub_comentario = 1
+                        vigente = "'Vigente'"
+                        while id_sub_comentario in ids:
+                            id_sub_comentario += 1
+                        cur.execute("INSERT INTO Sub_Comentario(id_sub_comentario,id_comentario,id_usuario,texto,fecha,estado) VALUES ({},{},{},{},{},{})".format(id_sub_comentario,numcomen,id[0],copucha,fehcahd,vigente))
+                        conn.commit()
+                        break
+                    elif opmispubli == "1":
+                        copucha = raw_input("COMENTE(300 max): ")
+                        copucha = str("'" +copucha + "'")
+                        fehcahd = "'" +str(datetime.date.today()) +"'"
+                        cur.execute("SELECT id_comentario  from comentario;")
+
+                        idc = cur.fetchall()
+                        ids = []
+                        for ij in idc:
+                            ids.append(ij[0])
+                        id_comentario = 1
+                        vigente = "'Vigente'"
+                        while id_comentario in ids:
+                            id_comentario += 1
+                        cur.execute("SELECT id_notificacion  from notificacion;")
+                        idn= cur.fetchall()
+                        ids = []
+                        for ij in idn:
+                            ids.append(ij[0])
+                        id_notificacion = 1
+                        vigente = "'Vigente'"
+                        while id_notificacion in ids:
+                            id_notificacion += 1
+                        cur.execute("INSERT INTO Comentario(id_comentario,id_usuario,id_publicacion,texto,fecha,estado) VALUES ({},{},{},{},{},{});".format(id_comentario, id[0],npubli, copucha,fehcahd ,vigente))
+                        cur.execute("INSERT INTO notificacion(id_notificacion, estado, tipo_notificacion, id_perfil)VALUES ({}, 'no leido', 'publicacion', {});".format(id_notificacion,id[0]))
+                        conn.commit()
+                        break
+                    elif opmispubli == "2":
+                        elincom = int(raw_input("ingrese id de comentario que desea eliminar: "))
+                        for cc in coment:
+                            if elincom == cc[0]:
+                                break
+                        cur.execute("UPDATE sub_comentario SET estado = 'Borrado' WHERE id_comentario = {}".format(elincom))
+                        cur.execute("UPDATE comentario SET estado = 'Borrado' WHERE id_comentario = {}".format(elincom))
+                        conn.commit()
+
+                    elif opmispubli == "3":
+                        cur.execute("SELECT *  FROM publicacion WHERE id_publicacion = {}".format(npubli))
+                        cambio = cur.fetchone()
+                        print("(1) CAMBIAR PRIVACIDAD")
+                        print("(2) CAMBIAR CONTENIDO")
+                        edipubli = raw_input("Ingrese una opcion: ")
+                        if edipubli == "1":
+                            if cambio[2] == "Privado":
+                                priva = "'Publico'"
+                            else:
+                                priva = "'Privado'"
+                            cur.execute("UPDATE publicacion SET privacidad = {} WHERE id_publicacion = {}".format(priva,npubli))
+                            conn.commit()
+
+                        elif edipubli == "2":
+                            copu= raw_input("Ingrese nuevo texto: ")
+                            copu = "'" + copu + "'"
+                            cur.execute("UPDATE publicacion SET contenido = {} WHERE id_publicacion = {}".format(copu,npubli))
+                            conn.commit()
+
+                    elif opmispubli == "4":
+                        cur.execute("UPDATE publicacion SET estado = 'Borrado' WHERE id_publicacion = {}".format(npubli))
+                        conn.commit()
+                    elif opmispubli == "5":
+                        break
+                    else:
+                        print("Opcion incorrecta! Intente nuevamente!")
+            elif opcionpublicacion == "3":
+                while True:
+                    cur.execute("SELECT DISTINCT p.id_publicacion, p.contenido  FROM publicacion p, (SELECT DISTINCT id_empresa as i  FROM postulacion WHERE id_perfil = {} )t1 WHERE i = p.id_usuario".format(id[0]))
+                    idsd= []
+                    idempre = cur.fetchall()
+                    for ii in idempre:
+                        idsd.append(ii[0], ii[1])
+                    cur.execute("SELECT  DISTINCT p.id_publicacion, p.contenido  FROM publicacion p, (SELECT id_empresa as i FROM trabaja WHERE id_trabajador = {})t1 WHERE i = p.id_usuario".format(id[0]))
+                    idmpre= cur.fetchall()
+                    for ii in idmpre:
+                        idsd.append(ii[0],ii[1])
+                    cur.execute("SELECT  DISTINCT p.id_publicacion, p.contenido FROM publicacion p ,(SELECT e.id as id FROM perfil e, (SELECT email_usuario_amistad as i FROM solicitud WHERE email_usuario = {})t1  WHERE i = e.email)t2 WHERE id = p.id_usuario ".format(str("'"+email+"'")))
+                    idams = cur.fetchall()
+                    for ii in idams:
+                        idsd.append(ii[0],ii[1])
+                    print(tabulate(idsd, headers=["id publicacion", "contenido"], tablefmt= "fancygrid"))
+                    print("(1) COMENTAR PUBLICACION")
+                    print("(2) COMENTAR COMENTARIO")
+                    print("(3) ELIMINAR COMENTARIO")
+                    print("(4) VOLVER")
+                    opccc = raw_input("Ingrese una opcion")
+                    if opccc== "1":
+                        npubli = int(raw_input("Ingrese id de publicacion: "))
+                        copucha = raw_input("COMENTE(300 max): ")
+                        copucha = str("'" +copucha + "'")
+                        fehcahd = "'" +str(datetime.date.today()) +"'"
+                        cur.execute("SELECT id_comentario  from comentario;")
+                        idc = cur.fetchall()
+                        ids = []
+                        for ij in idc:
+                            ids.append(ij[0])
+                        id_comentario = 1
+                        vigente = "'Vigente'"
+                        while id_comentario in ids:
+                            id_comentario += 1
+                        cur.execute("SELECT id_notificacion  from notificacion;")
+                        idn= cur.fetchall()
+                        ids = []
+                        for ij in idn:
+                            ids.append(ij[0])
+                        id_notificacion = 1
+                        vigente = "'Vigente'"
+                        while id_notificacion in ids:
+                            id_notificacion += 1
+                        cur.execute("INSERT INTO Comentario(id_comentario,id_usuario,id_publicacion,texto,fecha,estado) VALUES ({},{},{},{},{},{});".format(id_comentario, id[0],npubli, copucha,fehcahd ,vigente))
+                        cur.execute("INSERT INTO notificacion(id_notificacion, estado, tipo_notificacion, id_perfil)VALUES ({}, 'no leido', 'publicacion', {});".format(id_notificacion,id[0]))
+                        conn.commit()
+                        break
+                    elif opccc == "2":
+                        npubli = int(raw_input("Ingrese id de publicacion: "))
+                        cur.execute("SELECT id_comentario, texto from comentario WHERE  estado = 'Vigente' and id_publicacion = {};".format(npubli))
+                        coment = cur.fetchall()
+                        print(tabulate(coment, headers=["id_comentario", "comentario"], tablefmt= "fancygrid"))
+                        numcomen = int(raw_input("ingrese id de comentario: "))
+                        for nc in coment:
+                            if numcomen == nc[0]:
+                                break
+                        copucha = raw_input("COMENTE(300 max): ")
+                        copucha = str("'" +copucha + "'")
+                        fehcahd = "'" +str(datetime.date.today()) +"'"
+                        cur.execute("SELECT id_sub_comentario  from sub_comentario;")
+                        idc = cur.fetchall()
+                        ids = []
+                        for ij in idc:
+                            ids.append(ij[0])
+                        id_sub_comentario = 1
+                        vigente = "'Vigente'"
+                        while id_sub_comentario in ids:
+                            id_sub_comentario += 1
+                        cur.execute("INSERT INTO Sub_Comentario(id_sub_comentario,id_comentario,id_usuario,texto,fecha,estado) VALUES ({},{},{},{},{},{})".format(id_sub_comentario,numcomen,id[0],copucha,fehcahd,vigente))
+                        conn.commit()
+                        break
+                    elif opccc == "3":
+                        npubli = int(raw_input("Ingrese id de publicacion: "))
+                        cur.execute("SELECT id_comentario, texto from comentario WHERE  estado = 'Vigente' and id_publicacion = {};".format(npubli))
+                        coment = cur.fetchall()
+                        print(tabulate(coment, headers=["id_comentario", "comentario"], tablefmt= "fancygrid"))
+                        elincom = int(raw_input("ingrese id de comentario que desea eliminar: "))
+                        for cc in coment:
+                            if elincom == cc[0]:
+                                break
+                        cur.execute("UPDATE sub_comentario SET estado = 'Borrado' WHERE id_comentario = {}".format(elincom))
+                        cur.execute("UPDATE comentario SET estado = 'Borrado' WHERE id_comentario = {}".format(elincom))
+                        conn.commit()
+
+                    elif opccc == "4":
+                        break
+                    else:
+                        print("Opcion incorrecta! Intente nuevamente")  
+     
+            elif opcionpublicacion == "4":
+                break
+            else:
+                print("opcion incorrecta!")
 
         
     elif opcion == "3":
