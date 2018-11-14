@@ -39,9 +39,9 @@ while main:
                     print("Sesion iniciada")
                     cur.execute(("SELECT id FROM perfil WHERE {} = email;").format(str("'" + email + "'")))
                     id = cur.fetchone()
-                    print(id[0])
                     if id == None:
-                        id = 70
+                        id = []
+                        id.append(70)
                     usarioE = True
                     break
             if usarioE == False:
@@ -63,7 +63,7 @@ while main:
             else:
                 break
 
-        cur.execute("INSERT INTO usuario(email) VALUES({});".format(str("'" + cuenta + "'")))
+        cur.execute("INSERT INTO usuario(email, activo) VALUES({},{});".format(str("'" + cuenta + "'"), "'t'"))
         conn.commit()
         cur.close()
 
@@ -73,12 +73,6 @@ while main:
         cur.execute(("INSERT INTO clave(email_usuario,clave,fecha) VALUES(%s,%s,%s);"),
                     (cuenta, verificacion, str(fecha)))
         conn.commit()
-
-    elif opcion == "4":
-        trutru = True
-        break
-    else:
-        print("Opcion invalida! Intente nuevamente")
 
     elif opcion=="3":
         #como la fecha es de tipo date hay un detalle cuando se cambia la clave el mismo dia que otrs
@@ -105,6 +99,14 @@ while main:
             else:
                 print("Clave no valida intenetenuevamente!")
                 clave =raw_input("Ingrese nueva clave: ")
+
+    elif opcion == "4":
+        trutru = True
+        break
+    else:
+        print("Opcion invalida! Intente nuevamente")
+
+    
  
 
 TRUUEEE = True
@@ -540,9 +542,21 @@ while TRUUEEE:
                         vigente = "'Vigente'"
                         while id_sub_comentario in ids:
                             id_sub_comentario += 1
+                        cur.execute("SELECT id_notificacion  from notificacion;")
+                        idn = cur.fetchall()
+                        ids = []
+                        for ij in idn:
+                            ids.append(ij[0])
+                        id_notificacion = 1
+                        vigente = "'Vigente'"
+                        while id_notificacion in ids:
+                            id_notificacion += 1
                         cur.execute(
                             "INSERT INTO Sub_Comentario(id_sub_comentario,id_comentario,id_usuario,texto,fecha,estado) VALUES ({},{},{},{},{},{})".format(
                                 id_sub_comentario, numcomen, id[0], copucha, fehcahd, vigente))
+                        cur.execute(
+                            "INSERT INTO notificacion(id_notificacion, estado, tipo_notificacion, id_perfil)VALUES ({}, 'no leido', 'comentario', {});".format(
+                                id_notificacion, id[0]))
                         conn.commit()
                         break
                     elif opmispubli == "1":
@@ -697,9 +711,21 @@ while TRUUEEE:
                         vigente = "'Vigente'"
                         while id_sub_comentario in ids:
                             id_sub_comentario += 1
+                        cur.execute("SELECT id_notificacion  from notificacion;")
+                        idn = cur.fetchall()
+                        ids = []
+                        for ij in idn:
+                            ids.append(ij[0])
+                        id_notificacion = 1
+                        vigente = "'Vigente'"
+                        while id_notificacion in ids:
+                            id_notificacion += 1
                         cur.execute(
                             "INSERT INTO Sub_Comentario(id_sub_comentario,id_comentario,id_usuario,texto,fecha,estado) VALUES ({},{},{},{},{},{})".format(
                                 id_sub_comentario, numcomen, id[0], copucha, fehcahd, vigente))
+                        cur.execute(
+                            "INSERT INTO notificacion(id_notificacion, estado, tipo_notificacion, id_perfil)VALUES ({}, 'no leido', 'comentario', {});".format(
+                                id_notificacion, id[0]))
                         conn.commit()
                         break
                     elif opccc == "3":
@@ -768,22 +794,22 @@ while TRUUEEE:
                                         ("UPDATE notificacion SET  estado = 'leido' where id_notificacion = {}").format(
                                             i[0]))
                                     conn.commit()
-                        elif i[2] == "'publicacion'":  # son los de comentario
+                        elif i[2] == "publicacion":  # son los de comentario
                             cur.execute(
-                                "SELECT * FROM comentario WHERE id_comentario = {}  and estado ='Vigente'").format(i[0])
+                                "SELECT * FROM comentario WHERE id_comentario = {}  and estado ='Vigente'".format(i[0]))
                             ncom = cur.fetchone()
                             print("\t NOTIFICACION")
                             print("--------------------------------------------")
                             print("La publicacion: " + str(ncom[2]) + "\nUsuario de comentario:" + str(
-                                ncom[1]) + "\ntexto: " + ncom[2] + "\nfecha: " + str(ncom[5]) + "\n" + ncom[4])
+                                ncom[1]) + "\ntexto: " + str(ncom[3]) + "\nfecha: " + str(ncom[5]) + "\n" + str(ncom[4]))
                             print("--------------------------------------------")
                             cur.execute(
                                 ("UPDATE notificacion SET  estado = 'leido' where id_notificacion = {}").format(i[0]))
                             conn.commit()
-                        elif i[2] == "'comentario'":
+                        elif i[2] == "comentario":
                             cur.execute(
-                                "SELECT * FROM sub_comentario WHERE id_comentario = {}  and estado ='Vigente'").format(
-                                i[0])
+                                "SELECT * FROM sub_comentario WHERE id_comentario = {}  and estado ='Vigente'".format(
+                                i[0]))
                             nsubcom = cur.fetchone()
                             print("\t NOTIFICACION")
                             print("--------------------------------------------")
@@ -811,7 +837,7 @@ while TRUUEEE:
                 for i in rowss:
                     cc += 1
                     print("(" + str(cc) + ") " + " IDN: " + str(i[0]) + "\t  " + str(i[2]))
-                    print("---------------------------------------")
+                print("---------------------------------------")
                 numero = int(raw_input("ingrese numero de notificacion:"))
                 cc = 0
                 for i in rowss:
@@ -831,18 +857,18 @@ while TRUUEEE:
 
                         elif i[2] == "publicacion":  # son los de comentario
                             cur.execute(
-                                "SELECT * FROM comentario WHERE id_comentario = {}  and estado ='Vigente'").format(i[0])
+                                "SELECT * FROM comentario WHERE id_comentario = {}  and estado ='Vigente'".format(i[0]))
                             ncom = cur.fetchone()
                             print("\t NOTIFICACION")
                             print("--------------------------------------------")
                             print("La publicacion: " + str(ncom[2]) + "\nUsuario de comentario:" + str(
-                                ncom[1]) + "\ntexto: " + ncom[2] + "\nfecha: " + str(ncom[5]) + "\n" + ncom[4])
+                                ncom[1]) + "\ntexto: " + ncom[3] + "\nfecha: " + str(ncom[5]) + "\n" + ncom[4])
                             print("--------------------------------------------")
 
                         elif i[2] == "comentario":
                             cur.execute(
-                                "SELECT * FROM sub_comentario WHERE id_comentario = {}  and estado ='Vigente'").format(
-                                i[0])
+                                "SELECT * FROM sub_comentario WHERE id_comentario = {}  and estado ='Vigente'".format(
+                                i[0]))
                             nsubcom = cur.fetchone()
                             print("\t NOTIFICACION")
                             print("--------------------------------------------")
@@ -1410,14 +1436,6 @@ while TRUUEEE:
 
         if op3=="3":
             break
-
-
-
-
-
-
-
-
 
 
     elif opcion == "6":
