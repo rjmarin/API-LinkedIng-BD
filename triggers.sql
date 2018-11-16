@@ -6,7 +6,16 @@ psql -h 201.238.213.114 -p 54321 -d grupo23 -U grupo23
 
 2)
 
-3)
+3)create function validar_habi()
+return TRIGGER
+AS $$
+r = plpy.execute("SELECT * FROM validar")
+for i in r:
+	if i['id_perfil']==TD['new']['id_perfil'] and i['habilidad_perfil']==TD['new']['habilidad_perfil'] and i['email_usuario_valida']==TD['new']['email_usario_valida']: return 'SKIP'
+return 'OK'
+$$LANGUAGE plpythonu;
+
+CREATE TRIGGER habi BEFORE INSERT OR UPDATE ON validar EXECUTE PROCEDURE validar_habi();
 
 4)create function validar_trabajo()
 returns TRIGGER

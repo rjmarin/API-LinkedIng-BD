@@ -283,6 +283,9 @@ while TRUUEEE:
                 pass
             elif opcionperfil == "4":
                 while True:
+                    cur.execute(("SELECT  * FROM perfil WHERE {} = email ;  ").format(str("'" + email + "'")))
+                    row=cur.fetchall()
+                    
                     cur.execute((
                                     "SELECT  e.nombre,t.puesto,t.fecha_de_inicio,t.fecha_fin,e.id FROM trabaja t, perfil p, empresa e WHERE t.id_trabajador=p.id AND e.id=t.id_empresa AND  {} = p.email ;  ").format(
                         str("'" + email + "'")))
@@ -882,233 +885,255 @@ while TRUUEEE:
                 print("")
                     
     elif opcion == "4":
-        print "######### CONTACTOS #########"
-        print "-----------------------------"
-        cur.execute("SELECT * from solicitud WHERE aceptada = 'Aceptada'")
-        rows = cur.fetchall()
-        all_contacts=[]
-        for i in rows:
-            all_contacts.append(i)
-        contactos=[]
-        contactosReal=[]
-        cont=0
-        for i in rows:
-            if i[0]==email:
-                contactos.append([i[1],i[3],i[4],cont])
-                contactosReal.append(i)
-                cont+=1
-            elif i[1]==email:
-                contactos.append([i[0],i[3],i[4],cont])
-                contactosReal.append(i)
-                cont+=1
-        print "Su lista de contactos: "
-        print(tabulate(contactos, headers=["email", "id solicitud", "fecha_solicitud", "indice"], tablefmt="fancygrid"))
-        print ""
-        print ''
         while True:
-            print "(1) Ver Contactos"
-            print "(2) Agregar Contactos"
-            print "(3) Solicitudes Pendientes"
-            opcion2=raw_input("ingrese una opcion valida: ")
-            if opcion2=='1' or opcion2=='2' or opcion2=='3':
-                break
-
-        while opcion2=='1':
-
-            print "### Ver Contactos ###"
-            print "------------------"
-            print "Su lista de contactos: "
-
-            print(tabulate(contactos, headers=["email", "id solicitud", "fecha_solicitud", "indice"],
-                           tablefmt="fancygrid"))
-
-            print "(1) Ver Perfil"
-            print "(2) Dejar de ser Contactos"
-            print "(3) Volver"
-            op=raw_input("cual opcion desea: ")
-            while op!="1" and op!='2' and op!="3":
-                op = raw_input("ingrese una opcion valida :")
-
-            if op=="1":
-                print "para volver al menu anterior ingrese 'atras'"
-                contact = int(raw_input("ingrese el indece de un contacto para ver la informacion del perfil:"))
-                if contact > len(contactos) or contact < 0:
-                    print "ingrese una opcion valida"
-                    continue
-                if contact == 'atras':
-                    break
-                info_contacto=[]
-                #sacando la informacion del perfil del contacto
-                exe = "SELECT * FROM perfil WHERE email='" + str(contactos[contact][0]) + "'"
-                cur.execute(exe)
-                perfil_contacto = cur.fetchall()
-                for i in perfil_contacto:
-                    info_contacto.append(i)
-                    print(tabulate(perfil_contacto, headers=["id", "email", "nombre", "apellido", "genero", "fecha nacimiento", "nacionalidad", "descripcion"], tablefmt="fancygrid"))
-                #sacando el telefono del contacto
-
-                exe="SELECT telefono FROM telefono_perfil WHERE id_perfil=" + str(perfil_contacto[0][0]) +" LIMIT 1"
-                cur.execute(exe)
-                telefono_contacto=cur.fetchall()
-                print(tabulate(telefono_contacto,
-                               headers=["telefono"], tablefmt="fancygrid"))
-                # sacando el telefono del contacto1
-
-
-
-                #sacando las fotos de perfil del contacto
-                exe="SELECT foto FROM foto_perfil WHERE id_perfil=" + str(perfil_contacto[0][0])
-                cur.execute(exe)
-                fotos_contact=cur.fetchall()
-                info_contacto.append(fotos_contact)
-                print(tabulate(fotos_contact,
-                               headers=["fotos"], tablefmt="fancygrid"))
-                #sacando el estudio del contacto
-                exe="SELECT nombre_institucion, grado_academico, descripcion FROM estudio WHERE id_perfil=" + str(perfil_contacto[0][0])
-                cur.execute(exe)
-                estudio_contact=cur.fetchall()
-                info_contacto.append(estudio_contact)
-                print(tabulate(estudio_contact,
-                               headers=["Institucion", "grado", "descripcion"], tablefmt="fancygrid"))
-                #sacando la experiencia laboral
-                exe="SELECT id_empresa, puesto FROM trabaja WHERE id_trabajador=" + str(perfil_contacto[0][0])
-                cur.execute(exe)
-                experiencia_contacto=cur.fetchall()
-                info_contacto.append(experiencia_contacto)
-                print(tabulate(experiencia_contacto,
-                               headers=["id empresa","puesto"], tablefmt="fancygrid"))
-                #sacando la =s habilidades
-                exe="SELECT habilidad FROM habilidad WHERE id_perfil=" + str(perfil_contacto[0][0])
-                cur.execute(exe)
-                habilidades=cur.fetchall()
-
-                #validaciones habilidades
-                exe="SELECT * FROM validar WHERE id_perfil=" + str(perfil_contacto[0][0])
-                cur.execute(exe)
-                validaciones=cur.fetchall()
-
-                habilidades_contacto=[]
-                for i in habilidades:
-                    count=0
-                    for j in validaciones:
-                        if i[0]==j[1]:
-                            count+=1
-                    habilidades_contacto.append([i,count])
-
-                print(tabulate(habilidades_contacto,
-                               headers=["habilidad","validaciones"], tablefmt="fancygrid"))
-                #sacando todos los contactos en comun
-                contactos_contacto = []
-                for i in rows:
-                    if i[0] == perfil_contacto[0][1]:
-                        contactos_contacto.append([i[1], i[3], i[4]])
-                    if i[1] == perfil_contacto[0][1]:
-                        contactos_contacto.append([i[0], i[3], i[4]])
-                cant_comun=0
-                for i in contactos_contacto:
-                    for j in contactos:
-                        if i==j:
-                            cant_comun+=1
-
-                x=raw_input("ingrese una habilidad para validar o 'salir' para volver al menu anterior")
-                n=0
-                while n!=1:
-                    for i in habilidades_contacto:
-                        print i
-                        print i[0][0]
-                        if i[0][0]==x:
-                            i[1]+=1
-                            n=1
-                            break
-                        if x=="salir":
-                            n=1
-                            break
-                    if n==1:
-                        break
-                    x=raw_input("la habilidad que ingreso no se encuentra en las habilidades, intente denuevo , para salir escriba salir:")
-
-                if x=="salir":
-                    break
-                print perfil_contacto[0]
-                print x
-                print email
-                exe="INSERT INTO validar(id_perfil,habilidad_perfil,email_usuario_valida) VALUES ("+str(perfil_contacto[0][0])+",'"+x+"','"+email+"')"
-                cur.execute(exe)
-                conn.commit()
-
-
-            if op=='2':
-                print "### Dejar de ser contacto"
-                print "-------------------------"
-                print(tabulate(contactos, headers=["email", "id solicitud", "fecha_solicitud", "indice"],
-                               tablefmt="fancygrid"))
-                print "para volver al menu anterior ingrese 'atras'"
-                contact = int(raw_input("ingrese el indece de un contacto para eliniminarlo de sus contactos:"))
-                if contact > len(contactos) or contact < 0:
-                    print "ingrese una opcion valida"
-                    continue
-                if contact == 'atras':
-                    break
-                exe = "SELECT * FROM perfil WHERE email='" + str(contactos[contact][0]) + "'"
-                cur.execute(exe)
-                perfil_contacto = cur.fetchone()
-                exe="UPDATE solicitud SET  aceptada = 'Rechazada' WHERE  id_solicitud="+str(contactos[contact][2])
-                cur.execute(exe)
-                conn.commit()
-
-            if op=='3':
-                break
-
-        if opcion2=="2":
-            print"### Agregar Contactos ###"
-            print"-------------------------"
-            exe="SELECT * FROM perfil"
-            cur.execute(exe)
-            perfiles=cur.fetchall()
-            not_contactos=[]
-            for i in perfiles:
-                for j in contactosReal:
-                    if i[1]==j[1]:
-                        continue
-                    else:
-                        not_contactos.append(i)
-
-            print"Lista de usuarios que puede agregar:"
-            print(tabulate(not_contactos, headers=["id", "email", "nombre","apellido","genero","fecha nacimiento", "pais","descripcion"], tablefmt="fancygrid"))
-
-        if opcion2=="3":
-            exe="SELECT * FROM solicitud WEHRE aceptada= 'Ignored'"
-            cur.execute(exe)
-            rows=cur.fetchall()
-            print rows
-            sol_pend=[]
+            print "######### CONTACTOS #########"
+            print "-----------------------------"
+            cur.execute("SELECT * from solicitud WHERE aceptada = 'Aceptada'")
+            rows = cur.fetchall()
+            all_contacts=[]
+            for i in rows:
+                all_contacts.append(i)
+            contactos=[]
+            contactosReal=[]
+            cont=0
             for i in rows:
                 if i[0]==email:
-                    sol_pend.append(i)
-            print sol_pend
-            sol=int(raw_input("elija una solicitud con su indice"))
-            while sol<0 or sol >= len(sol_pend):
-                sol = raw_input("Error, elija una solicitud con su indice")
+                    contactos.append([i[1],i[3],i[4],cont])
+                    contactosReal.append(i)
+                    cont+=1
+                elif i[1]==email:
+                    contactos.append([i[0],i[3],i[4],cont])
+                    contactosReal.append(i)
+                    cont+=1
+            while True:
+                print "(1) Ver Contactos"
+                print "(2) Agregar Contactos"
+                print "(3) Solicitudes Pendientes"
+                print "(4) Volver"
+                opcion2=raw_input("ingrese una opcion valida: ")
+                if opcion2=='1' or opcion2=='2' or opcion2=='3' or opcion2=="4":
+                    break
 
-            print "(1) Aceptar"
-            print "(2) Rechazar"
-            print "(3) Ignorar"
-            op1=raw_input("ingrese una opcion: ")
-            while op1!="1" and op1!="2" and op1!="3":
-                op1 = raw_input("ingrese una opcion valida: ")
+            if opcion2=='4':
+                break
+            if opcion2=='1':
 
-            if op1=="1":
-                exe = "UPDATE solicitud SET  aceptada = 'Aceptada' WHERE  id_solicitud=" + str(sol_pend[3])
+                print "### Ver Contactos ###"
+                print "------------------"
+                print "Su lista de contactos: "
+
+                print(tabulate(contactos, headers=["email", "id solicitud", "fecha_solicitud", "indice"],
+                               tablefmt="fancygrid"))
+
+                print "(1) Ver Perfil"
+                print "(2) Dejar de ser Contactos"
+                print "(3) Volver"
+                op=raw_input("cual opcion desea: ")
+                while op!="1" and op!='2' and op!="3":
+                    op = raw_input("ingrese una opcion valida :")
+
+                if op=="1":
+                    print "para volver al menu anterior ingrese 'atras'"
+                    contact = int(raw_input("ingrese el indece de un contacto para ver la informacion del perfil:"))
+                    if contact > len(contactos) or contact < 0:
+                        print "ingrese una opcion valida"
+                        continue
+                    if contact == 'atras':
+                        continue
+                    info_contacto=[]
+                    #sacando la informacion del perfil del contacto
+                    exe = "SELECT * FROM perfil WHERE email='" + str(contactos[contact][0]) + "'"
+                    cur.execute(exe)
+                    perfil_contacto = cur.fetchall()
+                    for i in perfil_contacto:
+                        info_contacto.append(i)
+                        print(tabulate(perfil_contacto, headers=["id", "email", "nombre", "apellido", "genero", "fecha nacimiento", "nacionalidad", "descripcion"], tablefmt="fancygrid"))
+                    #sacando el telefono del contacto
+
+                    exe="SELECT telefono FROM telefono_perfil WHERE id_perfil=" + str(perfil_contacto[0][0]) +" LIMIT 1"
+                    cur.execute(exe)
+                    telefono_contacto=cur.fetchall()
+                    print(tabulate(telefono_contacto,
+                                   headers=["telefono"], tablefmt="fancygrid"))
+                    # sacando el telefono del contacto1
+
+
+
+                    #sacando las fotos de perfil del contacto
+                    exe="SELECT foto FROM foto_perfil WHERE id_perfil=" + str(perfil_contacto[0][0])
+                    cur.execute(exe)
+                    fotos_contact=cur.fetchall()
+                    info_contacto.append(fotos_contact)
+                    print(tabulate(fotos_contact,
+                                   headers=["fotos"], tablefmt="fancygrid"))
+                    #sacando el estudio del contacto
+                    exe="SELECT nombre_institucion, grado_academico, descripcion FROM estudio WHERE id_perfil=" + str(perfil_contacto[0][0])
+                    cur.execute(exe)
+                    estudio_contact=cur.fetchall()
+                    info_contacto.append(estudio_contact)
+                    print(tabulate(estudio_contact,
+                                   headers=["Institucion", "grado", "descripcion"], tablefmt="fancygrid"))
+                    #sacando la experiencia laboral
+                    exe="SELECT id_empresa, puesto FROM trabaja WHERE id_trabajador=" + str(perfil_contacto[0][0])
+                    cur.execute(exe)
+                    experiencia_contacto=cur.fetchall()
+                    info_contacto.append(experiencia_contacto)
+                    print(tabulate(experiencia_contacto,
+                                   headers=["id empresa","puesto"], tablefmt="fancygrid"))
+                    #sacando la =s habilidades
+                    exe="SELECT habilidad FROM habilidad WHERE id_perfil=" + str(perfil_contacto[0][0])
+                    cur.execute(exe)
+                    habilidades=cur.fetchall()
+
+                    #validaciones habilidades
+                    exe="SELECT * FROM validar WHERE id_perfil=" + str(perfil_contacto[0][0])
+                    cur.execute(exe)
+                    validaciones=cur.fetchall()
+
+                    habilidades_contacto=[]
+                    for i in habilidades:
+                        count=0
+                        for j in validaciones:
+                            if i[0]==j[1]:
+                                count+=1
+                        habilidades_contacto.append([i,count])
+
+                    print(tabulate(habilidades_contacto,
+                                   headers=["habilidad","validaciones"], tablefmt="fancygrid"))
+                    #sacando todos los contactos en comun
+                    contactos_contacto = []
+                    for i in rows:
+                        if i[0] == perfil_contacto[0][1]:
+                            contactos_contacto.append([i[1], i[3], i[4]])
+                        if i[1] == perfil_contacto[0][1]:
+                            contactos_contacto.append([i[0], i[3], i[4]])
+                    cant_comun=0
+                    for i in contactos_contacto:
+                        for j in contactos:
+                            if i==j:
+                                cant_comun+=1
+
+                    x=raw_input("ingrese una habilidad para validar o 'salir' para volver al menu anterior")
+                    n=0
+                    while n!=1:
+                        for i in habilidades_contacto:
+                            print i
+                            print i[0][0]
+                            if i[0][0]==x:
+                                i[1]+=1
+                                n=1
+                                break
+                            if x=="salir":
+                                n=1
+                                break
+                        if n==1:
+                            break
+                        x=raw_input("la habilidad que ingreso no se encuentra en las habilidades, intente denuevo , para salir escriba salir:")
+
+                    if x=="salir":
+                        break
+                    print perfil_contacto[0]
+                    print x
+                    print email
+                    exe="INSERT INTO validar(id_perfil,habilidad_perfil,email_usuario_valida) VALUES ("+str(perfil_contacto[0][0])+",'"+x+"','"+email+"')"
+                    cur.execute(exe)
+                    conn.commit()
+
+
+                if op=='2':
+                    print "### Dejar de ser contacto"
+                    print "-------------------------"
+                    print(tabulate(contactos, headers=["email", "id solicitud", "fecha_solicitud", "indice"],
+                                   tablefmt="fancygrid"))
+                    print "para volver al menu anterior ingrese 'atras'"
+                    contact = int(raw_input("ingrese el indece de un contacto para eliniminarlo de sus contactos:"))
+                    if contact > len(contactos) or contact < 0:
+                        print "ingrese una opcion valida"
+                        continue
+                    if contact == 'atras':
+                        continue
+                    exe = "SELECT * FROM perfil WHERE email='" + str(contactos[contact][0]) + "'"
+                    cur.execute(exe)
+                    perfil_contacto = cur.fetchone()
+                    exe="UPDATE solicitud SET  aceptada = 'Rechazada' WHERE  id_solicitud="+str(contactos[contact][2])
+                    cur.execute(exe)
+                    conn.commit()
+                    contactos.remove(contactos[contact])
+
+                if op=='3':
+                    continue
+
+            if opcion2=="2":
+                print"### Agregar Contactos ###"
+                print"-------------------------"
+                exe="SELECT * FROM perfil"
+                cur.execute(exe)
+                perfiles=cur.fetchall()
+                not_contactos=[]
+                for i in perfiles:
+                    for j in contactosReal:
+                        if i[1]==j[1]:
+                            continue
+                        else:
+                            not_contactos.append(i)
+
+                print"Lista de usuarios que puede agregar:"
+                print(tabulate(not_contactos, headers=["id", "email", "nombre","apellido","genero","fecha nacimiento", "pais","descripcion"], tablefmt="fancygrid"))
+                id_Agregar=int(raw_input("ingrese el id del usuario que quiera agregar :"))
+                for i in not_contactos:
+                    if id_Agregar==i[0]:
+                        persAgregar=i
+                exe="SELECT id_solicitud FROM solicitud GROUP BY id_solicitud ORDER BY id_solicitud DESC LIMIT 1"
+                cur.execute(exe)
+                numID2=cur.fetchone()
+                numID=numID2[0]
+                numID+=1
+                print numID
+                exe = "INSERT INTO solicitud (email_usuario, email_usuario_amistad, aceptada, id_solicitud) VALUES ('"+email+"','"+str(persAgregar[1])+"', 'Ignored',"+str(numID)+")"
                 cur.execute(exe)
                 conn.commit()
 
-            if op1 == "2":
-                exe = "UPDATE solicitud SET  aceptada = 'Rechazada' WHERE  id_solicitud=" + str(sol_pend[3])
-                cur.execute(exe)
-                conn.commit()
 
-            if op1 == "3":
-                continue
+            if opcion2=="3":
+                exe="SELECT * FROM solicitud WHERE aceptada= 'Ignored' AND  email_usuario_amistad="+"'"+email+"'"
+                cur.execute(exe)
+                sol_pend=cur.fetchall()
+
+                print sol_pend
+                print(tabulate(sol_pend, headers=["email", "tu email","condicion", "id solicitud","fecha"], tablefmt="fancygrid"))
+                mant=True
+                sol=int(raw_input("elija una solicitud con su id"))
+                for i in sol_pend:
+                    if i[3]==sol:
+                        mant=False
+                while mant:
+                    sol = raw_input("Error, elija una solicitud con su id o escriba atras para volver")
+                    for i in sol_pend:
+                        if i[3] == sol:
+                            mant = False
+                    if sol=='atras':
+                        break
+                if sol=='atras':
+                    continue
+                print "(1) Aceptar"
+                print "(2) Rechazar"
+                print "(3) Ignorar"
+                op1=raw_input("ingrese una opcion: ")
+                while op1!="1" and op1!="2" and op1!="3":
+                    op1 = raw_input("ingrese una opcion valida: ")
+
+                if op1=="1":
+                    exe = "UPDATE solicitud SET  aceptada = 'Aceptada' WHERE  id_solicitud=" + str(sol)
+                    cur.execute(exe)
+                    conn.commit()
+
+                if op1 == "2":
+                    exe = "UPDATE solicitud SET  aceptada = 'Rechazada' WHERE  id_solicitud=" + str(sol)
+                    cur.execute(exe)
+                    conn.commit()
+
+                if op1 == "3":
+                    continue
 
 
 
@@ -1429,6 +1454,8 @@ while TRUUEEE:
                                 "INSERT INTO postulacion(nombre_cargo,id_empresa,id_perfil,fecha_de_postulacion,aceptado) VALUES('{}','{}','{}','{}','{}');".format(
                                     l[0], l[1], row[0][0], str(fech), 'FALSE'))
                             conn.commit()
+                            
+                    print("Su postulacion ya ah sido realizada")
                 elif opcionverempresa == "3":
                     break
                 else:
